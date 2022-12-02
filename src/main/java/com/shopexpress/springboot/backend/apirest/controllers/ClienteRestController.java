@@ -2,14 +2,18 @@ package com.shopexpress.springboot.backend.apirest.controllers;
 
 import com.shopexpress.springboot.backend.apirest.models.entity.Cliente;
 import com.shopexpress.springboot.backend.apirest.models.services.IClienteService;
+import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = {"http://localhost:4200"}) //inidcamos a que host le damso permiso se puede poner otras limitaciones
 @RestController //! es un rest controllr no es un controllador normal
@@ -50,10 +54,26 @@ public class ClienteRestController {
 
     //?añadir cliente
     @PostMapping("/clientes")
-    public ResponseEntity<?> create(@RequestBody Cliente cliente){ //se le envia la informacion json por el body
+    public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente, BindingResult result){  //interceptar las validaciones y también le pasamos los errores
+        //se le envia la informacion json por el body
 
         Cliente clienteNew = null;
         Map<String, Object> response = new HashMap<>();
+
+        //si tiene errores @valid
+        if(result.hasErrors()){
+            //convertir los mensajes de eerorres en una lista
+            //! optimizar con programacion funcioanl
+//            List<String> errors = new ArrayList<>();
+//            for(FieldError err: result.getFieldErrors() ){
+//                errors.add("El campo " +err.getField() + " -> "  + err.getDefaultMessage());
+//            }
+
+            List<String> errors  =result.getFieldErrors().stream().map(e ->"El campo " +e.getField() + " -> "  + e.getDefaultMessage()).collect(Collectors.toList());
+
+            response.put("errors", errors);
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
 
         try {
             clienteNew = clienteService.save(cliente); //retorna el cliente
@@ -70,12 +90,18 @@ public class ClienteRestController {
 
     //?actualizar -> put -> update base data
     @PutMapping("clientes/{id}")
-    public ResponseEntity<?> update(@RequestBody Cliente cliente, @PathVariable Long id){
+    public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente, BindingResult result, @PathVariable Long id){ //antes de los para,etros el binding resuilt
         Cliente clienteActual = clienteService.findById(id); // obtenemos al cliente actual por medio del id,         //resetear valores
 
         Cliente clienteUpdate = null;
 
         Map<String, Object> response = new HashMap<>();
+
+        if(result.hasErrors()){
+            List<String> errors  =result.getFieldErrors().stream().map(e ->"El campo " +e.getField() + " -> "  + e.getDefaultMessage()).collect(Collectors.toList());
+            response.put("errors", errors);
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
 
         if(clienteActual == null){
             response.put("mensaje", "El cliente ID".concat(id.toString().concat(" no se pudo actualizar")));

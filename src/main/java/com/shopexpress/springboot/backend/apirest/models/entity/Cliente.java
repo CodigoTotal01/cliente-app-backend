@@ -1,6 +1,9 @@
 package com.shopexpress.springboot.backend.apirest.models.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -13,11 +16,16 @@ public class Cliente implements Serializable { //para guardar en los atributos d
     @GeneratedValue (strategy = GenerationType.IDENTITY) //para base de datos relacionales ideal
     private Long id;
 
+    @NotEmpty(message = "No puede estar vacio") //pom
+    @Size(min = 3, max = 12, message = "El nombre debe tener una dimencion entre 3 y 12")
     @Column(nullable = false) //modificaciones atributos tabla
     private String nombre;
 
+    @NotEmpty(message = "No puede estar vacio")
     private String apellido;
 
+    @NotEmpty(message = "No puede estar vacio")
+    @Email(message = "No es una direccion de correo valida")
     @Column(nullable = false, unique = true) //email unico
     private String email;
 
