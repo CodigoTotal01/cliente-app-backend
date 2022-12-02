@@ -4,11 +4,13 @@ import com.shopexpress.springboot.backend.apirest.models.entity.Cliente;
 import com.shopexpress.springboot.backend.apirest.models.services.IClienteService;
 import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
 @CrossOrigin(origins = {"http://localhost:4200"}) //inidcamos a que host le damso permiso se puede poner otras limitaciones
 @RestController //! es un rest controllr no es un controllador normal
 @RequestMapping("/api") // ruta url
@@ -19,42 +21,103 @@ public class ClienteRestController {
     //?mostrar clientes
     @GetMapping("/clientes")//indicar la ruta para el llmado del metodo para el endpoint
     public List<Cliente> index(){
-        return clienteService.findAll(); //cuando se envia se obtiene como json
+         return clienteService.findAll(); //cuando se envia se obtiene como json
     }
 
 
 
     //?mostrar un  cliente
     @GetMapping("clientes/{id}") //indicando pamar
-    @ResponseStatus(HttpStatus.OK) //* 200 asignado por defecto
-    public Cliente show(@PathVariable Long id){ // tomar el param
-        return clienteService.findById(id);
+    public ResponseEntity<?> show(@PathVariable Long id){ // tomar el param        //!si ocurre error -> no se envia el cliente
+
+        Cliente cliente  = null;
+
+        Map<String, Object> response = new HashMap<>(); // implementacion de un mapa
+
+        try {
+            cliente  = clienteService.findById((id));
+        }catch (DataAccessException e){
+                response.put("mensaje", "Error al realizar la consulta a la base de datos");
+                response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+                return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR); //responseentityy para entragar una respuesta meojor formateada
+        }
+        if(cliente == null){
+            response.put("mensaje", "El cliente ID".concat(id.toString().concat(" no existe en la base de datos")));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND); //responseentityy para entragar una respuesta meojor formateada
+        }
+        return new ResponseEntity<Cliente>(cliente, HttpStatus.OK); //200 le indicamos el tipo de dato a retornar
     }
 
     //?añadir cliente
     @PostMapping("/clientes")
-    @ResponseStatus(HttpStatus.CREATED) //*201
-    public Cliente create(@RequestBody Cliente cliente){ //se le enbia la informacion json por el body
-        return clienteService.save(cliente);
+    public ResponseEntity<?> create(@RequestBody Cliente cliente){ //se le envia la informacion json por el body
+
+        Cliente clienteNew = null;
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            clienteNew = clienteService.save(cliente); //retorna el cliente
+        }catch (DataAccessException e) {
+            response.put("mensaje", "Error al realizar la insersion del usuario a la base de datos");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        //puedes volver a usar el response map cundo todo sale bien
+        response.put("mensaje", "El cliente fue ingresado con exito");
+        response.put("cliente", clienteNew);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
     }
 
     //?actualizar -> put -> update base data
     @PutMapping("clientes/{id}")
-    @ResponseStatus(HttpStatus.CREATED) //*201
-    public Cliente update(@RequestBody Cliente cliente, @PathVariable Long id){
+    public ResponseEntity<?> update(@RequestBody Cliente cliente, @PathVariable Long id){
         Cliente clienteActual = clienteService.findById(id); // obtenemos al cliente actual por medio del id,         //resetear valores
-        clienteActual.setNombre(cliente.getNombre());
-        clienteActual.setApellido(cliente.getApellido());
-        clienteActual.setEmail(cliente.getEmail());
-        return clienteService.save(clienteActual);        //metodo save -> para intser y update si el id es null o nada, pero cuando esta taclado al contexto de persistencia y parte tiene un id hara un merth
+
+        Cliente clienteUpdate = null;
+
+        Map<String, Object> response = new HashMap<>();
+
+        if(clienteActual == null){
+            response.put("mensaje", "El cliente ID".concat(id.toString().concat(" no se pudo actualizar")));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND); //responseentityy para entragar una respuesta meojor formateada
+        }
+
+        try {
+            clienteActual.setNombre(cliente.getNombre());
+            clienteActual.setApellido(cliente.getApellido());
+            clienteActual.setEmail(cliente.getEmail());
+            clienteActual.setCreateAt(new Date());
+            clienteUpdate = clienteService.save(clienteActual);
+
+        }catch (DataAccessException e){
+            response.put("mensaje", "Error al realizar la actualzizaccion del usuario a la base de datos");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje", "El cliente fue actualizado con exito");
+        response.put("cliente", clienteUpdate);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);        //metodo save -> para intser y update si el id es null o nada, pero cuando esta taclado al contexto de persistencia y parte tiene un id hara un merth
     }
 
-    //?Eliminar un cliente
+    //? Eliminar un cliente
 
     @DeleteMapping("/clientes/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT) //*204
-    public void delete(@PathVariable Long id){
-        clienteService.delete(id);
+    public ResponseEntity<?> delete(@PathVariable Long id){
+
+
+        Map<String, Object> response = new HashMap<>();
+        try{
+            clienteService.delete(id);
+        }catch (DataAccessException e){
+            response.put("mensaje", "Error al realizar la eliminacion del usuario a la base de datos");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("mensaje", "El cliente fue eliminado con exito");
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);        //metodo
+
     }
 
 }

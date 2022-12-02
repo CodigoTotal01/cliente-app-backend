@@ -13,12 +13,12 @@ public class Cliente implements Serializable { //para guardar en los atributos d
     @GeneratedValue (strategy = GenerationType.IDENTITY) //para base de datos relacionales ideal
     private Long id;
 
-    @Column(name = "nombre") //modificaciones atributos tabla
+    @Column(nullable = false) //modificaciones atributos tabla
     private String nombre;
 
     private String apellido;
 
-
+    @Column(nullable = false, unique = true) //email unico
     private String email;
 
     @Column(name = "create_at")
