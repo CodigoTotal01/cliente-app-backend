@@ -3,6 +3,7 @@ package com.shopexpress.springboot.backend.apirest.models.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
@@ -26,17 +27,21 @@ public class Cliente implements Serializable { //para guardar en los atributos d
 
     @NotEmpty(message = "No puede estar vacio")
     @Email(message = "No es una direccion de correo valida")
-    @Column(nullable = false, unique = true) //email unico
+    @Column(nullable = false, unique = false) //email unico
     private String email;
 
     @Column(name = "create_at")
+    @NotNull//porque es objeto
     @Temporal(TemporalType.DATE) //indicar con que parte exctamente trabajar
     private Date createAt;
 
-    @PrePersist
-    public void prePersist(){ //antes que se genere la entiedad
-        createAt = new Date();
-    }
+
+    private String foto; // foto siempre en cadena
+
+//    @PrePersist
+//    public void prePersist(){ //antes que se genere la entiedad
+//        createAt = new Date();
+//    }
     public Cliente() {
     }
 
@@ -79,4 +84,14 @@ public class Cliente implements Serializable { //para guardar en los atributos d
     public void setCreateAt(Date createAt) {
         this.createAt = createAt;
     }
+
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+
 }

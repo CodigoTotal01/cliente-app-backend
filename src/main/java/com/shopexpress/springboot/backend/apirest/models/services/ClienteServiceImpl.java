@@ -3,6 +3,8 @@ package com.shopexpress.springboot.backend.apirest.models.services;
 import com.shopexpress.springboot.backend.apirest.models.dao.IClienteDao;
 import com.shopexpress.springboot.backend.apirest.models.entity.Cliente;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,7 @@ import java.util.List;
 @Service //marcamos como un compoennete de servicio
 public class ClienteServiceImpl implements IClienteService { //implemntar las firmas
 
+
     @Autowired
     private IClienteDao clienteDao; //inyectar el dao, esta alojada en el contexto de spring inyectable en cualquier otro componente
 
@@ -20,6 +23,13 @@ public class ClienteServiceImpl implements IClienteService { //implemntar las fi
     public List<Cliente> findAll() {
         return (List<Cliente>) clienteDao.findAll(); //retorna un iterable
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Cliente> findAll(Pageable pageable) {
+        return clienteDao.findAll(pageable);
+    }
+
 
     @Override
     @Transactional(readOnly = true)
