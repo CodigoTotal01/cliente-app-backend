@@ -2,6 +2,7 @@ package com.shopexpress.springboot.backend.apirest.models.services;
 
 import com.shopexpress.springboot.backend.apirest.models.dao.IClienteDao;
 import com.shopexpress.springboot.backend.apirest.models.entity.Cliente;
+import com.shopexpress.springboot.backend.apirest.models.entity.Region;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,5 +49,10 @@ public class ClienteServiceImpl implements IClienteService { //implemntar las fi
     @Transactional
     public void delete(Long id) {
         clienteDao.delete(findById(id));//se le pasa el Cliente completo
+    }
+
+    @Override
+    public List<Region> findAllRegiones() {
+        return clienteDao.findAllRegiones();
     }
 }

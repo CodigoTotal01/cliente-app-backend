@@ -1,5 +1,6 @@
 package com.shopexpress.springboot.backend.apirest.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,10 +12,10 @@ import java.util.Date;
 
 //!Se generara de manera automatica >
 @Entity
-@Table(name="clientes") //palabras compuestas se separa con guion
+@Table(name = "clientes") //palabras compuestas se separa con guion
 public class Cliente implements Serializable { //para guardar en los atributos de la sesion
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY) //para base de datos relacionales ideal
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //para base de datos relacionales ideal
     private Long id;
 
     @NotEmpty(message = "No puede estar vacio") //pom
@@ -25,8 +26,7 @@ public class Cliente implements Serializable { //para guardar en los atributos d
     @NotEmpty(message = "No puede estar vacio")
     private String apellido;
 
-    @NotEmpty(message = "No puede estar vacio")
-    @Email(message = "No es una direccion de correo valida")
+    @NotEmpty(message = "No puede estar vacio") @Email(message = "No es una direccion de correo valida")
     @Column(nullable = false, unique = false) //email unico
     private String email;
 
@@ -38,7 +38,13 @@ public class Cliente implements Serializable { //para guardar en los atributos d
 
     private String foto; // foto siempre en cadena
 
-//    @PrePersist
+    @NotNull(message="la región no puede ser vacia")
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="region_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Region region;
+
+    //    @PrePersist
 //    public void prePersist(){ //antes que se genere la entiedad
 //        createAt = new Date();
 //    }
@@ -94,4 +100,11 @@ public class Cliente implements Serializable { //para guardar en los atributos d
         this.foto = foto;
     }
 
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
 }
