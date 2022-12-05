@@ -69,15 +69,11 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <!-- spring boot le ortorga laversion-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-
-            <!-- spring boot le ortorga laversion-->
-
         </dependency>
 
     </dependencies>
